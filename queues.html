@@ -1,0 +1,134 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Task queues &mdash; django-gearman 0.4 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="django-gearman 0.4 documentation" href="index.html" />
+    <link rel="next" title="Production Usage" href="production-usage.html" />
+    <link rel="prev" title="Tasks" href="tasks.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="production-usage.html" title="Production Usage"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tasks.html" title="Tasks"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">django-gearman 0.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="task-queues">
+<h1>Task queues<a class="headerlink" href="#task-queues" title="Permalink to this headline">¶</a></h1>
+<p>Queues are a virtual abstraction layer built on top of gearman tasks. An
+easy way to describe it is the following example: Imagine you have a task
+for fetching e-mails from the server, another task for sending the emails
+and one more task for sending SMS via an SMS gateway. A problem you may
+encounter is that the email fetching tasks may effectively &#8220;block&#8221; the worker
+(there could be so many of them, it could be so time-consuming, that no other
+task would be able to pass through). Of course, one solution would be to add
+more workers (via the <tt class="docutils literal"><span class="pre">-w</span></tt> parameter), but that would only temporarily
+solve the problem. This is where queues come in.</p>
+<p>The first thing to do is to pass a queue name into the job description, like
+this</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@gearman_job</span><span class="p">(</span><span class="n">queue</span><span class="o">=</span><span class="s">&quot;my-queue-name&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">some_job</span><span class="p">(</span><span class="n">some_arg</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>You may then proceed to starting the worker that is bound to the specific
+queue</p>
+<div class="highlight-python"><pre>python manage.py gearman_worker -w 5 -q my-queue-name</pre>
+</div>
+<p>Be aware of the fact that when you don&#8217;t specify the queue name, the worker
+will take care of all tasks.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tasks.html"
+                        title="previous chapter">Tasks</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="production-usage.html"
+                        title="next chapter">Production Usage</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/queues.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="production-usage.html" title="Production Usage"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tasks.html" title="Tasks"
+             >previous</a> |</li>
+        <li><a href="index.html">django-gearman 0.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Frederic Wenzel &lt;fwenzel@mozilla.com&gt;, Mateusz Mikołajczyk &lt;mikolajczyk.mateusz@gmail.com&gt;.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
