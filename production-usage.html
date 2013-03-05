@@ -1,0 +1,168 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Production Usage &mdash; django-gearman 0.4 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="django-gearman 0.4 documentation" href="index.html" />
+    <link rel="prev" title="Task queues" href="queues.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="queues.html" title="Task queues"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">django-gearman 0.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="production-usage">
+<h1>Production Usage<a class="headerlink" href="#production-usage" title="Permalink to this headline">¶</a></h1>
+<p>Here&#8217;s a short tutorial on how to use django-gearman on production environment.</p>
+<p>Although technically you could start gearman workers inside screen process, we recommend using a specialised tool for monitoring the background processes.</p>
+<div class="section" id="install-supervisor">
+<h2>Install supervisor<a class="headerlink" href="#install-supervisor" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#supervisor">[Supervisor]</a> Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.</p>
+<p>Let&#8217;s assume your production environment is hosted using virtualenv, under the location of /my/envs.:</p>
+<div class="highlight-python"><pre>source /my/envs/someenv/bin/activate
+pip install supervisor</pre>
+</div>
+<p>This should install supervisor inside your virtualenv. Now, let&#8217;s start it so that we make sure it works fine.:</p>
+<div class="highlight-python"><pre>echo_supervisord_conf &gt; /my/envs/supervisord.conf
+supervisord -c /my/envs/supervisord.conf</pre>
+</div>
+<p>The above command produces rather large file, yet we&#8217;re only interested in the very end of it. Look for the &#8216;include&#8217; ini section.
+It&#8217;s default value should be simmilar to this::</p>
+<div class="highlight-python"><pre>;[include]
+;files = relative/directory/*.ini</pre>
+</div>
+<p>remove the semicolon so that the section looks similar to this::</p>
+<div class="highlight-python"><pre>[include]
+files = /my/project/workers/*.ini /my/other/project/workers/*.ini</pre>
+</div>
+<p>The above example assumes, that you will have to define the workers in <cite>*.ini</cite> files inside of your project&#8217;s &#8216;workers&#8217; dir.</p>
+</div>
+<div class="section" id="creating-worker-definitions">
+<h2>Creating worker definitions<a class="headerlink" href="#creating-worker-definitions" title="Permalink to this headline">¶</a></h2>
+<p>Below you can find example worker for the &#8216;default&#8217; queue.:</p>
+<div class="highlight-python"><pre>[program:myproject-default-worker]
+command=/location/to/your/projects/virtualenv/bin/python /location/to/your/project/manage.py gearman_worker -q default</pre>
+</div>
+<p>If you don&#8217;t care about queues (i.e. you want to have just one worker), just ommit the &#8216;queue&#8217; parameter, like so::</p>
+<div class="highlight-python"><pre>[program:myproject-default-worker]
+command=/location/to/your/projects/virtualenv/bin/python /location/to/your/project/manage.py gearman_worker</pre>
+</div>
+<p>We advise you to also create a group for all of the workers from the project. While not mandatory, this is a handy shortcut for restarting all of the
+daemons from one project.:</p>
+<div class="highlight-python"><pre>[group:myproject-all]
+programs=myproject-default-worker,myproject-another-worker,...
+priority=999</pre>
+</div>
+<p>After that, restarting all of the workers from your project&#8217;s group is as easy as typing:</p>
+<div class="highlight-python"><pre>supervisorctl restart myproject-all:*</pre>
+</div>
+<p>Also, please note that you <em>must</em> restart your workers during the release process, as they won&#8217;t be able to refresh the code automatically.
+The preferred workflow is as following:</p>
+<ul class="simple">
+<li>Stop the workers</li>
+<li>Do the release (upload the code, etc)</li>
+<li>Start the workers</li>
+</ul>
+<table class="docutils citation" frame="void" id="supervisor" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[Supervisor]</a></td><td><a class="reference external" href="http://http://supervisord.org">http://http://supervisord.org</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Production Usage</a><ul>
+<li><a class="reference internal" href="#install-supervisor">Install supervisor</a></li>
+<li><a class="reference internal" href="#creating-worker-definitions">Creating worker definitions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="queues.html"
+                        title="previous chapter">Task queues</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/production-usage.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="queues.html" title="Task queues"
+             >previous</a> |</li>
+        <li><a href="index.html">django-gearman 0.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Frederic Wenzel &lt;fwenzel@mozilla.com&gt;, Mateusz Mikołajczyk &lt;mikolajczyk.mateusz@gmail.com&gt;.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
